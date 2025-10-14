@@ -1,0 +1,39 @@
+### Order Service HTTP Requests
+
+@host = http://localhost:8080
+@delivery_service = http://localhost:8081
+
+### Health check
+GET {{host}}/actuator/health
+
+### Metrics
+GET {{host}}/actuator/metrics
+
+### Create new order
+POST {{host}}/api/v1/order
+Content-Type: application/json
+
+{
+  "customerId": "123",
+  "items": [
+    "Mithril",
+    "The One Ring",
+    "Andúril, Flame of the West"
+  ],
+  "address": "Street 123"
+}
+
+> {%
+    client.global.set("orderId", response.body)
+%}
+
+### Get order by ID
+GET {{host}}/api/v1/order/{{orderId}}
+Content-Type: application/json
+
+### Get Delivery
+GET {{delivery_service}}/api/v1/delivery/{{orderId}}
+Content-Type: application/json
+
+### Fullfill Delivery
+POST {{delivery_service}}/api/v1/delivery/{{orderId}}

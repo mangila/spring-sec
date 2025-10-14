@@ -1,0 +1,15 @@
+# Application config
+application:
+  integration:
+    delivery-service:
+      url: "http://localhost:8081"
+      basepath: "/api/v1/delivery"
+# Spring config
+spring:
+  application:
+    name: order-service
+  rabbitmq:
+    host: localhost
+    port: 5672
+    username: myuser
+    password: secret
