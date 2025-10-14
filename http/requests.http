@@ -3,8 +3,10 @@
 @order_service = http://localhost:8080
 @delivery_service = http://localhost:8081
 # Basic for Delivery service
-@delivery_username = delivery-username
-@delivery_password = delivery-password
+@delivery_reader_username = delivery-reader-username
+@delivery_reader_password = delivery-reader-password
+@delivery_writer_username = delivery-writer-username
+@delivery_writer_password = delivery-writer-password
 # Basic for Order Service
 @order_reader_username = order-reader-username
 @order_reader_password = order-reader-password
@@ -47,8 +49,8 @@ Content-Type: application/json
 ### Get Delivery
 GET {{delivery_service}}/api/v1/delivery/{{orderId}}
 Content-Type: application/json
-Authorization: Basic {{delivery_username}} {{delivery_password}}
+Authorization: Basic {{delivery_reader_username}} {{delivery_reader_password}}
 
 ### Fullfill Delivery
 POST {{delivery_service}}/api/v1/delivery/{{orderId}}
-Authorization: Basic {{delivery_username}} {{delivery_password}}
+Authorization: Basic {{delivery_writer_username}} {{delivery_writer_password}}

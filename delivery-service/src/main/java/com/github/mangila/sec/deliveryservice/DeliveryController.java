@@ -1,5 +1,6 @@
 package com.github.mangila.sec.deliveryservice;
 
+import jakarta.annotation.security.RolesAllowed;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -16,6 +17,7 @@ public class DeliveryController {
     @GetMapping(
             value = "{orderId}",
             produces = "application/json")
+    @RolesAllowed("READER")
     public ResponseEntity<String> getDelivery(@PathVariable String orderId) {
         String deliveryJson = deliveryService.getDelivery(orderId);
         if (deliveryJson.isEmpty()) {
@@ -25,6 +27,7 @@ public class DeliveryController {
     }
 
     @PostMapping(value = "{orderId}")
+    @RolesAllowed("WRITER")
     public ResponseEntity<?> fulfillDelivery(@PathVariable String orderId) {
         boolean result = deliveryService.fulfill(orderId);
         if (!result) {

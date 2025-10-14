@@ -5,10 +5,12 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.rabbit.listener.api.RabbitListenerErrorHandler;
 import org.springframework.amqp.rabbit.support.ListenerExecutionFailedException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.core.task.VirtualThreadTaskExecutor;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
 import org.springframework.security.config.http.SessionCreationPolicy;
@@ -18,9 +20,17 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.provisioning.InMemoryUserDetailsManager;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.util.Assert;
+
+import java.util.Map;
 
 @Configuration
 @Slf4j
+@EnableMethodSecurity(
+        prePostEnabled = false,
+        jsr250Enabled = true
+)
+// @EnableWebSecurity - Optional, if you want to use the default Spring Security configuration
 public class Config {
 
     @Bean
@@ -53,7 +63,11 @@ public class Config {
      * @throws Exception in case a configuration error occurs
      */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(
+            HttpSecurity http,
+            @Value("${spring.application.name}") String applicationName
+    ) throws Exception {
+        Assert.hasText(applicationName, "`spring.application.name` must be set");
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(matcher -> matcher
@@ -62,19 +76,31 @@ public class Config {
                 .sessionManagement(sessionManagementConfigurer -> sessionManagementConfigurer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(httpSecurityHttpBasicConfigurer -> {
-                    httpSecurityHttpBasicConfigurer.realmName("Delivery Service");
+                    httpSecurityHttpBasicConfigurer.realmName(applicationName);
                 });
         return http.build();
     }
 
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder encoder) {
-        return new InMemoryUserDetailsManager(
-                User.builder()
-                        .username("delivery-username")
-                        .password(encoder.encode("delivery-password"))
-                        .build()
+        var roles = Map.of(
+                "READER", "READER",
+                "WRITER", "WRITER"
         );
+
+        var reader = User.builder()
+                .username("delivery-reader-username")
+                .password(encoder.encode("delivery-reader-password"))
+                .roles(roles.get("READER"))
+                .build();
+
+        var writer = User.builder()
+                .username("delivery-writer-username")
+                .password(encoder.encode("delivery-writer-password"))
+                .roles(roles.get("READER"), roles.get("WRITER"))
+                .build();
+
+        return new InMemoryUserDetailsManager(reader, writer);
     }
 
     @Bean

@@ -45,7 +45,7 @@ public class Config {
         Assert.hasText(url, "`application.integration.delivery-service.url` must be set");
         return RestClient.builder()
                 .baseUrl(url)
-                .requestInterceptor(new BasicAuthenticationInterceptor("delivery-username", "delivery-password"))
+                .requestInterceptor(new BasicAuthenticationInterceptor("delivery-reader-username", "delivery-reader-password"))
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.USER_AGENT, applicationName)
@@ -63,7 +63,11 @@ public class Config {
      * @throws Exception if an error occurs during the configuration of the security filter
      */
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(
+            HttpSecurity http,
+            @Value("${spring.application.name}") String applicationName
+    ) throws Exception {
+        Assert.hasText(applicationName, "`spring.application.name` must be set");
         http
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(matcher -> matcher
@@ -72,7 +76,7 @@ public class Config {
                 .sessionManagement(sessionManagementConfigurer -> sessionManagementConfigurer
                         .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(httpSecurityHttpBasicConfigurer -> {
-                    httpSecurityHttpBasicConfigurer.realmName("Order Service");
+                    httpSecurityHttpBasicConfigurer.realmName(applicationName);
                 });
         return http.build();
     }
