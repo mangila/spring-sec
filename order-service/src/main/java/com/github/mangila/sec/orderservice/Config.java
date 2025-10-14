@@ -25,6 +25,7 @@ import org.springframework.web.client.RestClient;
         prePostEnabled = false,
         jsr250Enabled = true
 )
+// @EnableWebSecurity - Optional, if you want to use the default Spring Security configuration
 public class Config {
 
     public static final String NEW_ORDER_TO_DELIVERY_QUEUE = "new-order-to-delivery-queue";
