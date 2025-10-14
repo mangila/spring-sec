@@ -2,7 +2,7 @@
 
 Design for Security is a broad topic, but let's KISS (Keep it simple Stupid) :)
 
-**NOTE** DO NOT forget Spring Actuator when securing a Spring Boot application.
+**NOTE** DO NOT forget about Spring Actuator when securing a Spring Boot application.
 
 #### Basic Web App L7 Security Design scope
 
