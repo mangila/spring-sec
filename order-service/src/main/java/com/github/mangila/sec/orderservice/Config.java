@@ -20,6 +20,8 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestClient;
 
+import java.util.Map;
+
 @Configuration
 @EnableMethodSecurity(
         prePostEnabled = false,
@@ -77,17 +79,21 @@ public class Config {
 
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder encoder) {
+        var roles = Map.of(
+                "READER", "READER",
+                "WRITER", "WRITER"
+        );
 
         var reader = User.builder()
                 .username("order-reader-username")
                 .password(encoder.encode("order-reader-password"))
-                .roles("READER")
+                .roles(roles.get("READER"))
                 .build();
 
         var writer = User.builder()
                 .username("order-writer-username")
                 .password(encoder.encode("order-writer-password"))
-                .roles("WRITER", "READER")
+                .roles(roles.get("READER"), roles.get("WRITER"))
                 .build();
 
         return new InMemoryUserDetailsManager(reader, writer);
