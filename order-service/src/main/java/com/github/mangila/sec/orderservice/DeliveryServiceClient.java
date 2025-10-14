@@ -4,7 +4,6 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.amqp.AmqpConnectException;
 import org.springframework.amqp.core.Message;
 import org.springframework.amqp.core.MessageBuilder;
 import org.springframework.amqp.rabbit.core.RabbitTemplate;
@@ -17,7 +16,6 @@ import org.springframework.web.client.RestClient;
 
 import java.time.Instant;
 import java.util.Date;
-import java.util.Objects;
 
 @Service
 @Slf4j
@@ -49,17 +47,6 @@ public class DeliveryServiceClient {
             rabbitTemplate.send(Config.NEW_ORDER_TO_DELIVERY_QUEUE, message);
         } catch (JsonProcessingException e) {
             throw new RuntimeException(e);
-        }
-    }
-
-    public void enqueueNewOrderFallback(ObjectNode objectNode, Throwable exception) {
-        log.error("Failed to enqueue new order: {}", objectNode, exception);
-        if (Objects.requireNonNull(exception) instanceof AmqpConnectException ace) {
-            // handle connection error
-            log.error("RabbitMQ connection error: {}", ace.getMessage());
-        } else {
-            log.error("error: {}", exception.getMessage());
-            // queue DLQ or retry
         }
     }
 

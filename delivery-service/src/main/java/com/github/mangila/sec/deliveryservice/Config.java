@@ -10,6 +10,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.task.TaskExecutor;
 import org.springframework.core.task.VirtualThreadTaskExecutor;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -40,14 +42,27 @@ public class Config {
         };
     }
 
+    /**
+     * Configures the security filter chain for the application.
+     * This method sets up HTTP security settings including disabled CSRF,
+     * requiring authentication for all requests, stateless session management,
+     * and HTTP Basic authentication with a custom realm.
+     *
+     * @param http the {@link HttpSecurity} object used to configure security settings
+     * @return the configured {@link SecurityFilterChain} instance
+     * @throws Exception in case a configuration error occurs
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(matcher -> matcher
                         .anyRequest()
                         .authenticated())
+                .sessionManagement(sessionManagementConfigurer -> sessionManagementConfigurer
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(httpSecurityHttpBasicConfigurer -> {
-                    httpSecurityHttpBasicConfigurer.realmName("Order Service");
+                    httpSecurityHttpBasicConfigurer.realmName("Delivery Service");
                 });
         return http.build();
     }

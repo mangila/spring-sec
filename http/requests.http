@@ -1,0 +1,54 @@
+### Order Service HTTP Requests
+
+@order_service = http://localhost:8080
+@delivery_service = http://localhost:8081
+# Basic for Delivery service
+@delivery_username = delivery-username
+@delivery_password = delivery-password
+# Basic for Order Service
+@order_reader_username = order-reader-username
+@order_reader_password = order-reader-password
+@order_writer_username = order-writer-username
+@order_writer_password = order-writer-password
+
+### Health check
+GET {{order_service}}/actuator/health
+Authorization: Basic {{order_reader_username}} {{order_reader_password}}
+
+### Create new order
+POST {{order_service}}/api/v1/order
+Authorization: Basic {{order_writer_username}} {{order_writer_password}}
+Content-Type: application/json
+
+{
+  "customerId": "123",
+  "items": [
+    "Mithril",
+    "The One Ring",
+    "Andúril, Flame of the West"
+  ],
+  "address": "Street 123"
+}
+
+> {%
+    client.global.set("orderId", response.body)
+%}
+
+### Get order by ID on behalf of reader
+GET {{order_service}}/api/v1/order/{{orderId}}
+Authorization: Basic {{order_reader_username}} {{order_reader_password}}
+Content-Type: application/json
+
+### Get order by ID on behalf of writer
+GET {{order_service}}/api/v1/order/{{orderId}}
+Authorization: Basic {{order_writer_username}} {{order_writer_password}}
+Content-Type: application/json
+
+### Get Delivery
+GET {{delivery_service}}/api/v1/delivery/{{orderId}}
+Content-Type: application/json
+Authorization: Basic {{delivery_username}} {{delivery_password}}
+
+### Fullfill Delivery
+POST {{delivery_service}}/api/v1/delivery/{{orderId}}
+Authorization: Basic {{delivery_username}} {{delivery_password}}

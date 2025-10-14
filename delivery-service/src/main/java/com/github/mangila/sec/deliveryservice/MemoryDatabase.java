@@ -1,4 +1,4 @@
-package com.github.mangila.resilience.deliveryservice;
+package com.github.mangila.sec.deliveryservice;
 
 import org.springframework.stereotype.Service;
 

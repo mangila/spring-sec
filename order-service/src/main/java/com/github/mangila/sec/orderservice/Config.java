@@ -6,7 +6,11 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
+import org.springframework.http.client.support.BasicAuthenticationInterceptor;
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
@@ -17,6 +21,10 @@ import org.springframework.util.Assert;
 import org.springframework.web.client.RestClient;
 
 @Configuration
+@EnableMethodSecurity(
+        prePostEnabled = false,
+        jsr250Enabled = true
+)
 public class Config {
 
     public static final String NEW_ORDER_TO_DELIVERY_QUEUE = "new-order-to-delivery-queue";
@@ -34,6 +42,7 @@ public class Config {
         Assert.hasText(url, "`application.integration.delivery-service.url` must be set");
         return RestClient.builder()
                 .baseUrl(url)
+                .requestInterceptor(new BasicAuthenticationInterceptor("delivery-username", "delivery-password"))
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.USER_AGENT, applicationName)
@@ -41,12 +50,24 @@ public class Config {
     }
 
 
+    /**
+     * Configures the security filter chain for the application.
+     * The configuration disables CSRF protection, enforces authentication for all requests,
+     * sets session management to stateless, and configures HTTP Basic authentication with a specified realm name.
+     *
+     * @param http the HttpSecurity object to configure
+     * @return the configured SecurityFilterChain
+     * @throws Exception if an error occurs during the configuration of the security filter
+     */
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+                .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(matcher -> matcher
                         .anyRequest()
                         .authenticated())
+                .sessionManagement(sessionManagementConfigurer -> sessionManagementConfigurer
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .httpBasic(httpSecurityHttpBasicConfigurer -> {
                     httpSecurityHttpBasicConfigurer.realmName("Order Service");
                 });
@@ -55,12 +76,20 @@ public class Config {
 
     @Bean
     public UserDetailsService userDetailsService(PasswordEncoder encoder) {
-        return new InMemoryUserDetailsManager(
-                User.builder()
-                        .username("order-username")
-                        .password(encoder.encode("order-password"))
-                        .build()
-        );
+
+        var reader = User.builder()
+                .username("order-reader-username")
+                .password(encoder.encode("order-reader-password"))
+                .roles("READER")
+                .build();
+
+        var writer = User.builder()
+                .username("order-writer-username")
+                .password(encoder.encode("order-writer-password"))
+                .roles("WRITER", "READER")
+                .build();
+
+        return new InMemoryUserDetailsManager(reader, writer);
     }
 
     @Bean

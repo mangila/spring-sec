@@ -1,11 +1,12 @@
 package com.github.mangila.sec.orderservice;
 
+import jakarta.annotation.security.RolesAllowed;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
-@RequestMapping("/api/v1/order")
+@RequestMapping("api/v1/order")
 @Slf4j
 public class OrderController {
 
@@ -16,13 +17,15 @@ public class OrderController {
     }
 
     @PostMapping(consumes = "application/json")
+    @RolesAllowed("WRITER")
     public ResponseEntity<String> createNewOrder(@RequestBody CreateNewOrderRequest request) {
         log.info("Creating new order {}", request);
         String id = orderService.createNewOrder(request);
         return ResponseEntity.ok(id);
     }
 
-    @GetMapping("/{orderId}")
+    @GetMapping("{orderId}")
+    @RolesAllowed("READER")
     public ResponseEntity<OrderDto> findOrder(@PathVariable String orderId) {
         log.info("Finding order {}", orderId);
         OrderDto dto = orderService.findById(orderId);
