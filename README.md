@@ -10,6 +10,7 @@ Design for Security is a broad topic, but let's KISS (Keep it simple Stupid) :)
 * Authorize the data
 * Secure the data
 * Validate the data
+* Sensitive value management
 
 ### Protect the data
 
@@ -45,3 +46,13 @@ Make sure the data don't get corrupted
 Validate and sanitize input data
 
 Fail fast and fail loudly or fail silently with a fallback value
+
+### Sensitive value management
+
+The current best practice is to use secure storage for sensitive values.
+
+And only fetch credentials that are needed. Least privilege principle.
+
+Like a third-party service, or an encrypted value in a database.
+
+In this example, we will use a simple in-memory store. To simulate a real-world construct.

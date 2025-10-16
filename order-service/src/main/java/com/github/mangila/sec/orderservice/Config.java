@@ -20,6 +20,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.util.Assert;
 import org.springframework.web.client.RestClient;
 
+import java.util.List;
 import java.util.Map;
 
 @Configuration
@@ -31,6 +32,11 @@ import java.util.Map;
 public class Config {
 
     public static final String NEW_ORDER_TO_DELIVERY_QUEUE = "new-order-to-delivery-queue";
+    private final CredentialsStore credentialsStore;
+
+    public Config(CredentialsStore credentialsStore) {
+        this.credentialsStore = credentialsStore;
+    }
 
     @Bean
     public Queue createNewOrderToDeliveryQueue() {
@@ -43,9 +49,12 @@ public class Config {
             @Value("${application.integration.delivery-service.url}") String url) {
         Assert.hasText(applicationName, "`spring.application.name` must be set");
         Assert.hasText(url, "`application.integration.delivery-service.url` must be set");
+        List<String> credentials = credentialsStore.getCredentials(CredentialsStore.DELIVERY_READER_TOKEN);
+        String username = credentials.get(0);
+        String password = credentials.get(1);
         return RestClient.builder()
                 .baseUrl(url)
-                .requestInterceptor(new BasicAuthenticationInterceptor("delivery-reader-username", "delivery-reader-password"))
+                .requestInterceptor(new BasicAuthenticationInterceptor(username, password))
                 .defaultHeader(HttpHeaders.ACCEPT, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.CONTENT_TYPE, MediaType.APPLICATION_JSON_VALUE)
                 .defaultHeader(HttpHeaders.USER_AGENT, applicationName)
