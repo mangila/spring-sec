@@ -37,7 +37,7 @@ Authorization is the process of determining whether a user is allowed to access 
 
 Encrypt data at transit HTTPS (SSL/TLS) - Layer 6 stuffs, but anyway
 
-Often, another proxy service can be used for managing the first layer of SSL/TLS termination, other than that it depends on how sensitive/secure environment, if the proxy requesting the application also should terminate SSL/TLS.
+Often, another proxy service can be used for managing the first layer of SSL/TLS termination, other than that it depends on how sensitive/secure environment, if the proxy requesting the application also should terminate SSL/TLS. For a full end-to-end journey
 
 ### Validate the data
 
